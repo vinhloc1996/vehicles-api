@@ -37,7 +37,16 @@ public class CarService {
      * @return a list of all vehicles in the CarRepository
      */
     public List<Car> list() {
-        return repository.findAll();
+        List<Car> cars = repository.findAll();
+        for(Car car : cars){
+            Long carId = car.getId();
+            Location carLocation = car.getLocation();
+            String price = priceClient.getPrice(carId);
+            car.setPrice(price);
+            Location location = mapsClient.getAddress(carLocation);
+            car.setLocation(this.mapsClient.getAddress(location));
+        }
+        return cars;
     }
 
     /**
@@ -96,6 +105,7 @@ public class CarService {
                     .map(carToBeUpdated -> {
                         carToBeUpdated.setDetails(car.getDetails());
                         carToBeUpdated.setLocation(car.getLocation());
+                        carToBeUpdated.setCondition(car.getCondition());
                         return repository.save(carToBeUpdated);
                     }).orElseThrow(CarNotFoundException::new);
         }
